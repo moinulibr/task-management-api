@@ -1,0 +1,460 @@
+openapi: 3.0.3
+info:
+  title: 'Task Management - API API Documentation'
+  description: ''
+  version: 1.0.0
+servers:
+  -
+    url: 'http://localhost'
+tags:
+  -
+    name: Endpoints
+    description: ''
+paths:
+  /api/v1/auth/register:
+    post:
+      summary: ''
+      operationId: postApiV1AuthRegister
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: 'Must not be greater than 255 characters.'
+                  example: vmqeopfuudtdsufvyvddq
+                  nullable: false
+                email:
+                  type: string
+                  description: 'Must be a valid email address.'
+                  example: kunde.eloisa@example.com
+                  nullable: false
+                password:
+                  type: string
+                  description: 'Must be at least 8 characters.'
+                  example: '4[*UyPJ"}6'
+                  nullable: false
+              required:
+                - name
+                - email
+                - password
+      security: []
+  /api/v1/auth/login:
+    post:
+      summary: ''
+      operationId: postApiV1AuthLogin
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: 'Must be a valid email address.'
+                  example: qkunze@example.com
+                  nullable: false
+                password:
+                  type: string
+                  description: ''
+                  example: consequatur
+                  nullable: false
+              required:
+                - email
+                - password
+      security: []
+  /api/v1/auth/logout:
+    post:
+      summary: ''
+      operationId: postApiV1AuthLogout
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+      security: []
+  /api/v1/auth/show:
+    get:
+      summary: ''
+      operationId: getApiV1AuthShow
+      description: ''
+      parameters: []
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: Unauthenticated.
+                properties:
+                  message:
+                    type: string
+                    example: Unauthenticated.
+      tags:
+        - Endpoints
+      security: []
+  /api/v1/tasks:
+    get:
+      summary: ''
+      operationId: getApiV1Tasks
+      description: ''
+      parameters: []
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: Unauthenticated.
+                properties:
+                  message:
+                    type: string
+                    example: Unauthenticated.
+      tags:
+        - Endpoints
+      security: []
+    post:
+      summary: ''
+      operationId: postApiV1Tasks
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: 'Must not be greater than 150 characters.'
+                  example: vmqeopfuudtdsufvyvddq
+                  nullable: false
+                description:
+                  type: string
+                  description: ''
+                  example: 'Dolores dolorum amet iste laborum eius est dolor.'
+                  nullable: true
+                due_date:
+                  type: string
+                  description: 'Must be a valid date.'
+                  example: '2025-05-15T22:37:28'
+                  nullable: true
+                status:
+                  type: string
+                  description: ''
+                  example: todo
+                  nullable: false
+                  enum:
+                    - todo
+                    - in_progress
+                    - done
+                priority:
+                  type: string
+                  description: ''
+                  example: low
+                  nullable: false
+                  enum:
+                    - low
+                    - medium
+                    - high
+              required:
+                - title
+      security: []
+  '/api/v1/tasks/{id}':
+    get:
+      summary: ''
+      operationId: getApiV1TasksId
+      description: ''
+      parameters: []
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: Unauthenticated.
+                properties:
+                  message:
+                    type: string
+                    example: Unauthenticated.
+      tags:
+        - Endpoints
+      security: []
+    put:
+      summary: ''
+      operationId: putApiV1TasksId
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: 'Must not be greater than 150 characters.'
+                  example: vmqeopfuudtdsufvyvddq
+                  nullable: false
+                description:
+                  type: string
+                  description: ''
+                  example: 'Dolores dolorum amet iste laborum eius est dolor.'
+                  nullable: true
+                due_date:
+                  type: string
+                  description: 'Must be a valid date.'
+                  example: '2025-05-15T22:37:28'
+                  nullable: true
+                status:
+                  type: string
+                  description: ''
+                  example: in_progress
+                  nullable: false
+                  enum:
+                    - todo
+                    - in_progress
+                    - done
+                priority:
+                  type: string
+                  description: ''
+                  example: high
+                  nullable: false
+                  enum:
+                    - low
+                    - medium
+                    - high
+      security: []
+    delete:
+      summary: ''
+      operationId: deleteApiV1TasksId
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+      security: []
+    parameters:
+      -
+        in: path
+        name: id
+        description: 'The ID of the task.'
+        example: consequatur
+        required: true
+        schema:
+          type: string
+  '/api/v1/tasks/{task}/assign':
+    post:
+      summary: ''
+      operationId: postApiV1TasksTaskAssign
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  type: string
+                  description: 'The <code>id</code> of an existing record in the users table.'
+                  example: consequatur
+                  nullable: false
+              required:
+                - user_id
+      security: []
+    parameters:
+      -
+        in: path
+        name: task
+        description: 'The task.'
+        example: consequatur
+        required: true
+        schema:
+          type: string
+  '/api/v1/users/{user}/assign-tasks':
+    post:
+      summary: ''
+      operationId: postApiV1UsersUserAssignTasks
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                task_ids:
+                  type: array
+                  description: 'The <code>id</code> of an existing record in the tasks table.'
+                  example: null
+                  items:
+                    type: string
+      security: []
+    parameters:
+      -
+        in: path
+        name: user
+        description: 'The user.'
+        example: consequatur
+        required: true
+        schema:
+          type: string
+  '/api/v1/users/{user}/assigned-tasks-count':
+    get:
+      summary: ''
+      operationId: getApiV1UsersUserAssignedTasksCount
+      description: ''
+      parameters: []
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: Unauthenticated.
+                properties:
+                  message:
+                    type: string
+                    example: Unauthenticated.
+      tags:
+        - Endpoints
+      security: []
+    parameters:
+      -
+        in: path
+        name: user
+        description: 'The user.'
+        example: consequatur
+        required: true
+        schema:
+          type: string
+  '/api/v1/users/{user}/assigned-tasks':
+    get:
+      summary: ''
+      operationId: getApiV1UsersUserAssignedTasks
+      description: ''
+      parameters: []
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: Unauthenticated.
+                properties:
+                  message:
+                    type: string
+                    example: Unauthenticated.
+      tags:
+        - Endpoints
+      security: []
+    parameters:
+      -
+        in: path
+        name: user
+        description: 'The user.'
+        example: consequatur
+        required: true
+        schema:
+          type: string
+  '/api/v1/tasks/{id}/restore':
+    post:
+      summary: ''
+      operationId: postApiV1TasksIdRestore
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+      security: []
+    parameters:
+      -
+        in: path
+        name: id
+        description: 'The ID of the task.'
+        example: consequatur
+        required: true
+        schema:
+          type: string
+  '/api/v1/tasks/{id}/force-delete':
+    delete:
+      summary: ''
+      operationId: deleteApiV1TasksIdForceDelete
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+      security: []
+    parameters:
+      -
+        in: path
+        name: id
+        description: 'The ID of the task.'
+        example: consequatur
+        required: true
+        schema:
+          type: string
+  /api/v1/tasks/trashed:
+    get:
+      summary: ''
+      operationId: getApiV1TasksTrashed
+      description: ''
+      parameters: []
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: Unauthenticated.
+                properties:
+                  message:
+                    type: string
+                    example: Unauthenticated.
+      tags:
+        - Endpoints
+      security: []

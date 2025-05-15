@@ -21,7 +21,7 @@ A clean, modular Laravel 12 API for managing tasks with features like filtering,
 
 * **Framework:** Laravel 12
 * **Authentication:** Laravel Sanctum
-* **Database:** MySQL *(change port/config as needed)*
+* **Database:** MySQL
 * **Testing:** PHPUnit (v11)
 * **Documentation:** Scribe
 
@@ -31,7 +31,7 @@ A clean, modular Laravel 12 API for managing tasks with features like filtering,
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/task-management-api.git
+git clone https://github.com/moinulibr/task-management-api.git
 cd task-management-api
 
 # Install dependencies
@@ -67,7 +67,7 @@ php artisan serve
 ```bash
 # Ensure .env.testing has:
 APP_ENV=testing
-APP_KEY=base64:71cjtA7Gnh1fyXI5L88BLACqFEkoL5BHE+gt/cpvq4A=
+APP_KEY=
 DB_CONNECTION=sqlite
 DB_DATABASE=:memory:
 
