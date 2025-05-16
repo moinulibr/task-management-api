@@ -23,7 +23,7 @@ A clean, modular Laravel 12 API for managing tasks with features like filtering,
 * **Authentication:** Laravel Sanctum
 * **Database:** MySQL
 * **Testing:** PHPUnit (v11)
-* **Documentation:** Scribe
+* **Documentation:**  Scramble
 
 ---
 
@@ -78,13 +78,10 @@ php artisan test
 
 ## API Documentation
 
-Scribe is used to generate API documentation.
+Scramble is used to generate API documentation.
 
-```bash
-php artisan scribe:generate
-```
 
-Then visit: `http://localhost:8000/docs`
+Then visit: `http://localhost:8000/docs/api`
 
 ---
 

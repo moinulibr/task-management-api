@@ -15,11 +15,28 @@ use App\Http\Resources\TaskResource;
 use Symfony\Component\HttpFoundation\Response;
 use App\Http\Resources\ApiResponseResource;
 use App\Http\Resources\PaginatedTaskResource;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
+/**
+ * Class TaskController
+ *
+ * Handles all task-related endpoints:
+ * - CRUD operations
+ * - Assigning tasks to users
+ * - Filtering, sorting, pagination
+ * - Soft delete, restore, force delete
+ * - Task statistics
+ *
+ * @package App\Http\Controllers\API\V1
+ */
 class TaskController extends Controller
 {
     use HttpResponses, HandlesExceptions;
     
+    /**
+     * Display a listing of tasks for the authenticated user.
+     * Supports filters, search, sort, pagination.
+     */
     public function index(Request $request)
     {
         $query = Task::query();
@@ -73,73 +90,98 @@ class TaskController extends Controller
         return new PaginatedTaskResource($tasks);
     }
 
+    /**
+     * Store a newly created task for the authenticated user.
+     */
     public function store(StoreTaskRequest $request)
     {
-        $task = auth()->user()->tasks()->create($request->validated());
+        try{
+            $task = auth()->user()->tasks()->create($request->validated());
 
-        return (new ApiResponseResource(
-            new TaskResource($task),
-            'Task has been created successfully.',
-            Response::HTTP_CREATED
-        ))->response()->setStatusCode(Response::HTTP_CREATED);
+            return $this->success('Task has been created successfully', Response::HTTP_CREATED,new TaskResource($task) );
+        }
+        catch (\Exception $e) {
+            return $this->error(null, 'Something went wrong!', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
+    /**
+     * Display a single task by ID.
+     */
     public function show(string $id)
     {     
-        return $this->handleWithTryCatch(function () use ($id) {
+        try{
             $task = Task::findOrFail($id);
-            
-            return (new ApiResponseResource(
-                new TaskResource($task->load('assignees')),
-                'Task has been fetched successfully.',
-                Response::HTTP_OK
-            ))->response()->setStatusCode(Response::HTTP_OK);
-        });
+
+            return $this->success('Task has been fetched successfully. successfully', Response::HTTP_OK,new TaskResource($task->load('assignees')) );
+        }
+        catch (ModelNotFoundException $e) {
+            return $this->error(null, 'Resource not found!', Response::HTTP_NOT_FOUND);
+        } catch (\Exception $e) {
+            return $this->error(null, 'Something went wrong!', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
+    /**
+     * Update a task by ID.
+     */
     public function update(UpdateTaskRequest $request, string $id)
     {
-        return $this->handleWithTryCatch(function () use ($request,$id) {
+        try{
             $task = Task::findOrFail($id);
             $task->update($request->validated());
-
-            return (new ApiResponseResource(
-                new TaskResource($task),
-                'Task has been updated successfully.',
-                Response::HTTP_OK
-            ))->response()->setStatusCode(Response::HTTP_OK);
-        });
+            
+            return $this->success('Task has been updated successfully. successfully', Response::HTTP_OK,new TaskResource($task));
+        }
+        catch (ModelNotFoundException $e) {
+            return $this->error(null, 'Resource not found!', Response::HTTP_NOT_FOUND);
+        } catch (\Exception $e) {
+            return $this->error(null, 'Something went wrong!', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
+    /**
+     * Soft delete a task by ID.
+     */
     public function destroy(string $id)
     {
-        return $this->handleWithTryCatch(function () use ($id) {
+        try{
             $task = Task::findOrFail($id);
             $task->delete();
-            return (new ApiResponseResource(
-                null,
-                'Task has been deleted successfully.',
-                Response::HTTP_NO_CONTENT
-            ))->response()->setStatusCode(Response::HTTP_NO_CONTENT);
-        });
+            
+            return $this->success('Task has been deleted successfully.', Response::HTTP_NO_CONTENT,null);
+        }
+        catch (ModelNotFoundException $e) {
+            return $this->error(null, 'Resource not found!', Response::HTTP_NOT_FOUND);
+        } catch (\Exception $e) {
+            return $this->error(null, 'Something went wrong!', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
+    /**
+     * Assign a task to a user (sync without detaching).
+     */
     public function taskAssignToUser(Request $request, string $id)
     {
         $request->validate([
             'user_id' => 'required|exists:users,id',
         ]);
-        return $this->handleWithTryCatch(function () use ($id,$request) {
+        try{
             $task = Task::findOrFail($id);
             $task->assignees()->syncWithoutDetaching([$request->user_id]);
-            return (new ApiResponseResource(
-                null,
-                'Task has been assigned successfully.',
-                Response::HTTP_OK
-            ))->response()->setStatusCode(Response::HTTP_OK);
-        });
-    }
 
+            return $this->success('Task has been assigned successfully.', Response::HTTP_OK,new TaskResource($task));
+        }
+        catch (ModelNotFoundException $e) {
+            return $this->error(null, 'Resource not found!', Response::HTTP_NOT_FOUND);
+        } catch (\Exception $e) {
+            return $this->error(null, 'Something went wrong!', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+    /**
+     * Assign multiple tasks to a user (bulk).
+     */
     public function assignMultipleTasksToUser(Request $request, string $id)
     {
         $validated = $request->validate([
@@ -147,115 +189,149 @@ class TaskController extends Controller
             'task_ids.*' => ['exists:tasks,id'],
         ]);
 
-        return $this->handleWithTryCatch(function () use ($id,$validated) {
+        try{
             $user = User::findOrFail($id);
             $user->assignedTasks()->syncWithoutDetaching($validated['task_ids']);
 
-            return (new ApiResponseResource(
-                null,
-                'Tasks has been assigned successfully.',
-                Response::HTTP_OK
-            ))->response()->setStatusCode(Response::HTTP_OK);
-        });
+            return $this->success('Tasks has been assigned successfully.', Response::HTTP_OK,null);
+        }
+        catch (ModelNotFoundException $e) {
+            return $this->error(null, 'Resource not found!', Response::HTTP_NOT_FOUND);
+        } catch (\Exception $e) {
+            return $this->error(null, 'Something went wrong!', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
+    /**
+     * Return assigned task count for a specific user.
+     */
     public function assignedTasksCount(string $id)
     {
-        return $this->handleWithTryCatch(function () use ($id) {
+        try{
             $user = User::findOrFail($id);
             $count = $user->assignedTasks()->count();
 
-            return (new ApiResponseResource(
-                [
-                    'user_id' => $user->id,
-                    'assigned_tasks_count' => $count
-                ],
-                'Tasks has been fetched successfully.',
-                Response::HTTP_OK
-            ))->response()->setStatusCode(Response::HTTP_OK);
-        });
+            return $this->success('Tasks has been fetched successfully.', Response::HTTP_OK,new TaskResource([
+                'user_id' => $user->id,
+                'assigned_tasks_count' => $count
+            ]));
+        }
+        catch (ModelNotFoundException $e) {
+            return $this->error(null, 'Resource not found!', Response::HTTP_NOT_FOUND);
+        } catch (\Exception $e) {
+            return $this->error(null, 'Something went wrong!', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
+    /**
+     * Return all assigned tasks to a specific user with filters & pagination.
+     */
     public function assignedTasks(Request $request, string $id)
     {
-        return $this->handleWithTryCatch(function () use ($id,$request) {
+        try {
             $user = User::findOrFail($id);
-            $query = $user->assignedTasks()->with('assignees', 'user');
 
-            // Optional: Filter
-            if ($request->filled('status')) {
-                $query->where('status', $request->status);
-            }
+            $query = $user->assignedTasks()->with('assignees', 'user')
 
-            if ($request->filled('priority')) {
-                $query->where('priority', $request->priority);
-            }
+                // Filter by status
+                ->when($request->filled('status'), function ($q) use ($request) {
+                    $q->where('status', $request->status);
+                })
 
-            if ($request->filled('due_date')) {
-                $query->whereDate('due_date', $request->due_date);
-            }
+                // Filter by priority
+                ->when($request->filled('priority'), function ($q) use ($request) {
+                    $q->where('priority', $request->priority);
+                })
 
-            if ($request->filled('search')) {
-                $query->where(function ($q) use ($request) {
-                    $q->where('title', 'like', "%{$request->search}%")
-                        ->orWhere('description', 'like', "%{$request->search}%");
+                // Filter by due_date
+                ->when($request->filled('due_date'), function ($q) use ($request) {
+                    $q->whereDate('due_date', $request->due_date);
+                })
+
+                // Search title or description
+                ->when($request->filled('search'), function ($q) use ($request) {
+                    $q->where(function ($query) use ($request) {
+                        $query->where('title', 'like', "%{$request->search}%")
+                            ->orWhere('description', 'like', "%{$request->search}%");
+                    });
+                })
+
+                // Sort by column (with optional direction)
+                ->when($request->filled('sort'), function ($q) use ($request) {
+                    $sort = $request->sort;
+                    $direction = Str::startsWith($sort, '-') ? 'desc' : 'asc';
+                    $column = ltrim($sort, '-');
+
+                    if (in_array($column, ['due_date', 'created_at'])) {
+                        $q->orderBy($column, $direction);
+                    }
+                }, function ($q) {
+                    $q->latest(); // Default sort
                 });
-            }
-
-            if ($request->filled('sort')) {
-                $sort = $request->sort;
-                $direction = Str::startsWith($sort, '-') ? 'desc' : 'asc';
-                $column = ltrim($sort, '-');
-
-                if (in_array($column, ['due_date', 'created_at'])) {
-                    $query->orderBy($column, $direction);
-                }
-            } else {
-                $query->latest();
-            }
 
             $perPage = $request->get('per_page', 10);
             $tasks = $query->paginate($perPage);
 
             return new PaginatedTaskResource($tasks);
-        });
+
+        } catch (ModelNotFoundException $e) {
+            return $this->error(null, 'Resource not found!', Response::HTTP_NOT_FOUND);
+        } catch (\Exception $e) {
+            return $this->error(null, 'Something went wrong!', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
+    /**
+     * Restore a soft-deleted task.
+     */
     public function restore(string $id)
     {
-        return $this->handleWithTryCatch(function () use ($id) {
+        try{
             $task = Task::onlyTrashed()->findOrFail($id);
             $task->restore();
 
-            return (new ApiResponseResource(
-                new TaskResource($task),
-                'Task has been restored successfully.',
-                Response::HTTP_OK
-            ))->response()->setStatusCode(Response::HTTP_OK);
-        });
+            return $this->success('Task has been restored successfully.', Response::HTTP_OK,new TaskResource($task));
+        }
+        catch (ModelNotFoundException $e) {
+            return $this->error(null, 'Resource not found!', Response::HTTP_NOT_FOUND);
+        } catch (\Exception $e) {
+            return $this->error(null, 'Something went wrong!', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
+    /**
+     * Permanently delete a soft-deleted task.
+     */
     public function forceDelete(string $id)
     {
-        return $this->handleWithTryCatch(function () use ($id) {
+        try{
             $task = Task::onlyTrashed()->findOrFail($id);
             $task->forceDelete();
 
-            return (new ApiResponseResource(
-                null,
-                'Task has been permanently deleted.',
-                Response::HTTP_OK
-            ))->response()->setStatusCode(Response::HTTP_OK);
-        });
+            return $this->success('Task has been permanently deleted.', Response::HTTP_OK,null);
+        }
+        catch (ModelNotFoundException $e) {
+            return $this->error(null, 'Resource not found!', Response::HTTP_NOT_FOUND);
+        } catch (\Exception $e) {
+            return $this->error(null, 'Something went wrong!', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
+    /**
+     * List all soft-deleted tasks of the authenticated user.
+     */
     public function trashedTasks(Request $request)
     {
-        $query = Task::onlyTrashed()
+        try{
+            $query = Task::onlyTrashed()
             ->where('user_id', auth()->id());
 
-        $tasks = $query->paginate($request->get('per_page', 10));
+            $tasks = $query->paginate($request->get('per_page', 10));
 
-        return new PaginatedTaskResource($tasks);
+            return new PaginatedTaskResource($tasks);
+        }
+        catch (\Exception $e) {
+            return $this->error(null, 'Something went wrong!', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 }
