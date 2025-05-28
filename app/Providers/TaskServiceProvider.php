@@ -6,6 +6,7 @@ use App\Repositories\TaskRepository;
 use Illuminate\Support\ServiceProvider;
 
 class TaskServiceProvider extends ServiceProvider{
+    
     /**
      * Register services.
      */
