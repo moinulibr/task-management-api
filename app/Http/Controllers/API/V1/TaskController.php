@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API\V1;
 
 use App\Models\Task;
 use App\Models\User;
+use App\Repositories\TaskRepository;
 use App\Traits\HttpResponses;
 use App\Traits\HandlesExceptions;
 use Illuminate\Http\Request;
@@ -33,12 +34,18 @@ class TaskController extends Controller
 {
     use HttpResponses, HandlesExceptions;
     
+    protected TaskRepository $taskRepository;
+    public function __construct(TaskRepository $taskRepository){
+        $this->taskRepository = $taskRepository;
+    }
+
     /**
      * Display a listing of tasks for the authenticated user.
      * Supports filters, search, sort, pagination.
      */
     public function index(Request $request)
     {
+        //$this->taskRepository->getAllTasks();
         $query = Task::query();
 
         // Only authenticated user's assigned or created tasks
