@@ -1,18 +1,18 @@
 <?php
-
 namespace App\Providers;
 
 use App\Interfaces\TaskInterface;
 use App\Repositories\TaskRepository;
 use Illuminate\Support\ServiceProvider;
 
-class AppServiceProvider extends ServiceProvider
-{
+class TaskServiceProvider extends ServiceProvider{
     /**
-     * Register any application services.
+     * Register services.
      */
     public function register(): void
     {
+        //it's not using. using AppServiceProvider
+        //Task Binding
         $this->app->bind(
             TaskInterface::class,
             TaskRepository::class
@@ -20,7 +20,7 @@ class AppServiceProvider extends ServiceProvider
     }
 
     /**
-     * Bootstrap any application services.
+     * Bootstrap services.
      */
     public function boot(): void
     {

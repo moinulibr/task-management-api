@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API\V1;
 
+use App\Interfaces\TaskInterface;
 use App\Models\Task;
 use App\Models\User;
 use App\Repositories\TaskRepository;
@@ -34,9 +35,14 @@ class TaskController extends Controller
 {
     use HttpResponses, HandlesExceptions;
     
-    protected TaskRepository $taskRepository;
+    /* protected TaskRepository $taskRepository;
     public function __construct(TaskRepository $taskRepository){
         $this->taskRepository = $taskRepository;
+    } */
+
+    protected TaskInterface $taskInterface;
+    public function __construct(TaskInterface $taskInterface){
+        $this->taskInterface = $taskInterface;
     }
 
     /**
@@ -45,7 +51,8 @@ class TaskController extends Controller
      */
     public function index(Request $request)
     {
-        //$this->taskRepository->getAllTasks();
+        //return $this->taskRepository->getAllTasks();
+        //return $this->taskInterface->getAllTasks();
         $query = Task::query();
 
         // Only authenticated user's assigned or created tasks
